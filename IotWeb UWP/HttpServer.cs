@@ -17,5 +17,11 @@ namespace IotWeb.Server
         {
             // No configuration required
         }
+
+        public HttpServer(int port, string hostName, NetworkInterface networkInterface, SessionConfiguration sessionConfiguration)
+           : base(new SocketServer(port, hostName, networkInterface), new HybridSessionStorageHandler(sessionConfiguration))
+        {
+            // No configuration required
+        }
     }
 }

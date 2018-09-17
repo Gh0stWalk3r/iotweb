@@ -1,15 +1,17 @@
-﻿namespace IotWeb.Common
+﻿using System.Threading.Tasks;
+
+namespace IotWeb.Common
 {
-	public delegate void ServerStoppedHandler(IServer server);
+    public delegate void ServerStoppedHandler(IServer server);
 
-	public interface IServer
-	{
-		event ServerStoppedHandler ServerStopped;
+    public interface IServer
+    {
+        event ServerStoppedHandler ServerStopped;
 
-		bool Running { get; }
+        bool Running { get; }
 
-		void Start();
+        Task<bool> StartAsync();
 
-		void Stop();
-	}
+        void Stop();
+    }
 }

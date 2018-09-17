@@ -11,4 +11,10 @@ namespace IotWeb.Common.Util
         Size,
         LastAccessTime
     }
+    public enum NetworkInterface
+    {
+        Any,
+        Ethernet,
+        Wireless
+    }
 }

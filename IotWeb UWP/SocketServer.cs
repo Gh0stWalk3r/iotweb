@@ -7,6 +7,7 @@ using Windows.Networking;
 using Windows.Networking.Sockets;
 using Windows.Networking.Connectivity;
 using IotWeb.Common;
+using IotWeb.Common.Util;
 
 namespace IotWeb.Server
 {
@@ -15,7 +16,8 @@ namespace IotWeb.Server
         // Instance variables
         private ConnectionHandler m_handler;
         private List<StreamSocketListener> m_listeners;
-
+        public string HostName { get; set; }
+        public NetworkInterface NetworkInterface { get; set; }
         public bool Running { get; private set; }
         public int Port { get; private set; }
 
@@ -44,8 +46,19 @@ namespace IotWeb.Server
             Running = false;
             Port = port;
         }
-
-        public async void Start()
+        public SocketServer(int port, string hostName)
+        {
+            Running = false;
+            Port = port;
+            NetworkInterface = NetworkInterface.Any;
+        }
+        public SocketServer(int port, string hostName, NetworkInterface interfaceType)
+        {
+            Running = false;
+            Port = port;
+            NetworkInterface = interfaceType;
+        }
+        public async System.Threading.Tasks.Task<bool> StartAsync()
         {
             lock (this)
             {
@@ -55,21 +68,62 @@ namespace IotWeb.Server
             }
             m_listeners = new List<StreamSocketListener>();
             StreamSocketListener listener;
+
+
             foreach (HostName candidate in NetworkInformation.GetHostNames())
             {
+
                 if ((candidate.Type == HostNameType.Ipv4) || (candidate.Type == HostNameType.Ipv6))
                 {
-                    listener = new StreamSocketListener();
-                    listener.ConnectionReceived += OnConnectionReceived;
-                    await listener.BindEndpointAsync(candidate, Port.ToString());
-                    m_listeners.Add(listener);
+                    if (string.IsNullOrEmpty(HostName))
+                    {
+                        listener = new StreamSocketListener();
+                        listener.ConnectionReceived += OnConnectionReceived;
+                        await listener.BindEndpointAsync(candidate, Port.ToString());
+                        m_listeners.Add(listener);
+                    }
+                    else
+                    {
+                        if (NetworkInterface == NetworkInterface.Any)
+                        {
+                            if (HostName == candidate.DisplayName)
+                            {
+                                listener = new StreamSocketListener();
+                                listener.ConnectionReceived += OnConnectionReceived;
+                                await listener.BindEndpointAsync(candidate, Port.ToString());
+                                m_listeners.Add(listener);
+                            }
+                        }
+                        else if (NetworkInterface == NetworkInterface.Ethernet)
+                        {
+                            if (HostName == candidate.DisplayName)
+                            {
+                                listener = new StreamSocketListener();
+                                listener.ConnectionReceived += OnConnectionReceived;
+                                await listener.BindEndpointAsync(candidate, Port.ToString());
+                                m_listeners.Add(listener);
+                            }
+                        }
+                        else if (NetworkInterface == NetworkInterface.Wireless)
+                        {
+                            if (HostName == candidate.DisplayName)
+                            {
+                                listener = new StreamSocketListener();
+                                listener.ConnectionReceived += OnConnectionReceived;
+                                await listener.BindEndpointAsync(candidate, Port.ToString());
+                                m_listeners.Add(listener);
+                            }
+                        }
+                    }
                 }
             }
+
+            return m_listeners.Count > 0;
         }
 
         public void Stop()
         {
-            lock(this)
+            lock (this)
             {
                 if (!Running)
                     return;
